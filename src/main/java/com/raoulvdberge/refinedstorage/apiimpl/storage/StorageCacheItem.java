@@ -1,5 +1,6 @@
 package com.raoulvdberge.refinedstorage.apiimpl.storage;
 
+import com.raoulvdberge.refinedstorage.RS;
 import com.raoulvdberge.refinedstorage.api.network.INetwork;
 import com.raoulvdberge.refinedstorage.api.storage.*;
 import com.raoulvdberge.refinedstorage.api.util.IStackList;
@@ -81,7 +82,13 @@ public class StorageCacheItem implements IStorageCache<ItemStack> {
     @Override
     public synchronized void flush() {
         if (!batchedChanges.isEmpty()) {
-            batchedChanges.forEach(c -> listeners.forEach(l -> l.onChanged(c.getKey(), c.getValue())));
+            RS.logger.info("Flushing StorageCache ({} items)", batchedChanges.size());
+            batchedChanges.forEach(c -> {
+                listeners.forEach(l -> {
+                    RS.logger.info("Notifying {} about {} ({})", l, c.getKey(), c.getValue());
+                    l.onChanged(c.getKey(), c.getValue());
+                });
+            });
             batchedChanges.clear();
         }
     }

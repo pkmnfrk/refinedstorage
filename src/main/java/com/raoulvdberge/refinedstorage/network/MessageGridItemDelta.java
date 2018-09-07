@@ -1,5 +1,6 @@
 package com.raoulvdberge.refinedstorage.network;
 
+import com.raoulvdberge.refinedstorage.RS;
 import com.raoulvdberge.refinedstorage.api.network.INetwork;
 import com.raoulvdberge.refinedstorage.api.storage.IStorageTracker;
 import com.raoulvdberge.refinedstorage.gui.GuiBase;
@@ -40,12 +41,16 @@ public class MessageGridItemDelta implements IMessage, IMessageHandler<MessageGr
         this.storageTracker = storageTracker;
         this.stack = stack;
         this.delta = delta;
+
+        RS.logger.info("Instantiating MessageGridItemDelta (singular) for {}", stack);
     }
 
     public MessageGridItemDelta(@Nullable INetwork network, IStorageTracker<ItemStack> storageTracker, List<Pair<ItemStack, Integer>> deltas) {
         this.network = network;
         this.storageTracker = storageTracker;
         this.deltas = deltas;
+
+        RS.logger.info("Instantiating MessageGridItemDelta (vector) for {} ItemStacks", deltas.size());
     }
 
     @Override
@@ -101,8 +106,10 @@ public class MessageGridItemDelta implements IMessage, IMessageHandler<MessageGr
     public IMessage onMessage(MessageGridItemDelta message, MessageContext ctx) {
         GuiBase.executeLater(GuiGrid.class, grid -> {
             if (message.gridStack != null) {
+                RS.logger.info("Handling MessageGridItemDelta (singular) for {}", message.gridStack.getStack());
                 grid.getView().postChange(message.gridStack, message.delta);
             } else {
+                RS.logger.info("Handling MessageGridItemDelta (vector) with {} items", message.gridStacks.size());
                 message.gridStacks.forEach(p -> grid.getView().postChange(p.getLeft(), p.getRight()));
             }
 
