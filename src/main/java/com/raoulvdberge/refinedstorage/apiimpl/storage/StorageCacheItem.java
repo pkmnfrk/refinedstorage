@@ -83,12 +83,19 @@ public class StorageCacheItem implements IStorageCache<ItemStack> {
     public synchronized void flush() {
         if (!batchedChanges.isEmpty()) {
             RS.logger.info("Flushing StorageCache ({} items)", batchedChanges.size());
-            batchedChanges.forEach(c -> {
+            if(batchedChanges.size() > 1) {
                 listeners.forEach(l -> {
-                    RS.logger.info("Notifying {} about {} ({})", l, c.getKey(), c.getValue());
-                    l.onChanged(c.getKey(), c.getValue());
+                    RS.logger.info("Notifying {} about {} ({})", l, batchedChanges);
+                    l.onChangedBulk(batchedChanges);
                 });
-            });
+            } else {
+                batchedChanges.forEach(c -> {
+                    listeners.forEach(l -> {
+                        RS.logger.info("Notifying {} about {} ({})", l, c.getKey(), c.getValue());
+                        l.onChanged(c.getKey(), c.getValue());
+                    });
+                });
+            }
             batchedChanges.clear();
         }
     }
